@@ -1,4 +1,9 @@
-require('dotenv').config();
+// Load environment variables (conditional for production)
+try {
+  require('dotenv').config();
+} catch (error) {
+  console.log('dotenv not available, using system environment variables');
+}
 const express = require('express');
 const cors = require('cors');
 const app = express();
