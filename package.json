@@ -7,8 +7,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "jest",
-    "build": "echo 'No build step required for Node.js backend'",
-    "postinstall": "node initDb.js"
+    "build": "npm install --production"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
