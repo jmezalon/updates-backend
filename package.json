@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "jest",
-    "build": "npm install --production"
+    "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
