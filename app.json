@@ -1,0 +1,33 @@
+{
+  "name": "Updates Backend",
+  "description": "Backend API for Church Updates App",
+  "repository": "https://github.com/jmezalon/updates-backend",
+  "logo": "",
+  "keywords": ["node", "express", "sqlite", "church", "api"],
+  "image": "heroku/nodejs",
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "JWT_SECRET": {
+      "description": "JWT secret key for authentication",
+      "generator": "secret"
+    },
+    "CORS_ORIGIN": {
+      "description": "CORS origin for admin portal",
+      "value": "https://your-admin-portal.vercel.app"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
