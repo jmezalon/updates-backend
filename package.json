@@ -1,0 +1,30 @@
+{
+  "name": "updates-backend",
+  "version": "1.0.0",
+  "description": "Backend for Updates app (Express + PostgreSQL)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest",
+    "build": "echo 'No build step required for Node.js backend'",
+    "postinstall": "node initDb.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.5",
+    "pg": "^8.11.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
+    "supertest": "^6.3.3"
+  }
+}
