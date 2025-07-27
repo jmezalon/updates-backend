@@ -43,6 +43,7 @@ const enrollmentRoutes = require("./routes/enrollment");
 const uploadRoutes = require("./routes/upload");
 const favoritesRouter = require("./routes/favorites");
 const publicEventsRouter = require("./routes/publicEvents");
+const privacyRouter = require("./routes/privacy");
 const errorHandler = require("./middleware/errorHandler");
 const { initializeDatabase } = require("./db");
 const { fixImageUrlsMiddleware } = require("./utils/imageUrlUtils");
@@ -57,6 +58,7 @@ app.use("/uploads", express.static("uploads"));
 
 // Public routes (no /api prefix) - for shared links and web views
 app.use("/events", publicEventsRouter);
+app.use("/", privacyRouter);
 
 // API routes - all routes under /api prefix
 app.use("/api/auth", authRouter);
