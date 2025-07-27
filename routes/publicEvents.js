@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const events = require('../models/events');
+const { fixImageUrl } = require('../utils/imageUrlUtils');
 
 // GET /events/:id - Public web view for shared events
 router.get('/:id', async (req, res, next) => {
@@ -42,6 +43,9 @@ router.get('/:id', async (req, res, next) => {
       });
     };
 
+    // Fix image URL if it contains localhost
+    const fixedImageUrl = event.image_url ? fixImageUrl(event.image_url) : '';
+    
     // Generate the HTML with Open Graph meta tags
     const html = `
       <!DOCTYPE html>
@@ -54,7 +58,7 @@ router.get('/:id', async (req, res, next) => {
         <!-- Open Graph meta tags for social sharing -->
         <meta property="og:title" content="${event.title}">
         <meta property="og:description" content="${event.description || `Join us for ${event.title} at ${event.church_name}`}">
-        <meta property="og:image" content="${event.image_url || ''}">
+        <meta property="og:image" content="${fixedImageUrl}">
         <meta property="og:url" content="${req.protocol}://${req.get('host')}/events/${event.id}">
         <meta property="og:type" content="event">
         <meta property="og:site_name" content="Updates">
@@ -63,7 +67,7 @@ router.get('/:id', async (req, res, next) => {
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="${event.title}">
         <meta name="twitter:description" content="${event.description || `Join us for ${event.title} at ${event.church_name}`}">
-        <meta name="twitter:image" content="${event.image_url || ''}">
+        <meta name="twitter:image" content="${fixedImageUrl}">
         
         <!-- Favicon and app icons -->
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -258,7 +262,7 @@ router.get('/:id', async (req, res, next) => {
           </div>
           
           <!-- Event Image -->
-          ${event.image_url ? `<img src="${event.image_url}" alt="${event.title}" class="event-image">` : ''}
+          ${fixedImageUrl ? `<img src="${fixedImageUrl}" alt="${event.title}" class="event-image">` : ''}
           
           <!-- Content -->
           <div class="content">

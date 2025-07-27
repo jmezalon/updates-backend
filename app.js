@@ -45,8 +45,12 @@ const favoritesRouter = require("./routes/favorites");
 const publicEventsRouter = require("./routes/publicEvents");
 const errorHandler = require("./middleware/errorHandler");
 const { initializeDatabase } = require("./db");
+const { fixImageUrlsMiddleware } = require("./utils/imageUrlUtils");
 
 app.use(express.json());
+
+// Fix image URLs in all API responses
+app.use('/api', fixImageUrlsMiddleware);
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"));

@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('./auth');
+const { getFullImageUrl } = require('../utils/imageUrlUtils');
 
 const router = express.Router();
 
@@ -50,7 +51,7 @@ router.post('/image', authenticateToken, upload.single('image'), (req, res) => {
     }
 
     // Return the URL where the image can be accessed
-    const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+    const imageUrl = getFullImageUrl(`/uploads/${req.file.filename}`);
     
     res.json({
       message: 'Image uploaded successfully',
