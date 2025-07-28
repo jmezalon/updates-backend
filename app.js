@@ -19,9 +19,14 @@ const corsOptions = {
           /^https:\/\/.*\.vercel\.app$/,
           /^https:\/\/.*\.netlify\.app$/,
           /^https:\/\/.*\.herokuapp\.com$/,
+          /^https:\/\/.*\.onrender\.com$/,
           // Add specific known admin portal URLs
           "https://churchupdates.netlify.app",
           "https://updates-admin.vercel.app",
+          // Allow localhost for admin portal testing
+          "http://localhost:3000",
+          "http://localhost:5173",
+          "http://127.0.0.1:3000",
         ].filter(Boolean) // Remove undefined values
       : [
           "http://localhost:5173",
