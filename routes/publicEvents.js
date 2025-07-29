@@ -317,28 +317,17 @@ router.get('/:id', async (req, res, next) => {
           <div class="footer">
             <div class="footer-title">Want to discover more events?</div>
             <div class="footer-text">
-              Download the Updates app to explore events from churches in your area, 
+              Our mobile app is coming soon! In the meantime, visit our web app to explore events from churches in your area, 
               save favorites, and never miss what's happening in your community.
             </div>
-            <a href="#" class="download-button" onclick="promptAppDownload()">Get Updates App</a>
+            <a href="#" class="download-button" onclick="promptAppDownload()">Visit Web App</a>
           </div>
         </div>
         
         <script>
           function promptAppDownload() {
-            // Detect mobile platform and show appropriate download options
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            
-            if (/android/i.test(userAgent)) {
-              // Android - redirect to Play Store (when available)
-              alert('Updates app coming soon to Google Play Store!\\n\\nFor now, visit our website to learn more.');
-            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-              // iOS - redirect to App Store (when available)
-              alert('Updates app coming soon to the App Store!\\n\\nFor now, visit our website to learn more.');
-            } else {
-              // Desktop or other - show general message
-              alert('Download the Updates mobile app to discover more events!\\n\\nComing soon to App Store and Google Play.');
-            }
+            // Redirect to web app while mobile apps are under review
+            window.open('https://mychurchupdates.netlify.app', '_blank');
           }
           
           // Add smooth scroll behavior

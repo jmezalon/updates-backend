@@ -94,8 +94,8 @@ router.get('/privacy-policy', (req, res) => {
         <h2>Contact Us</h2>
         <p>If you have any questions about this Privacy Policy, please contact us:</p>
         <ul>
-            <li>Email: privacy@updates-app.com</li>
-            <li>Website: https://updates-backend-api-beebc8cc747c.herokuapp.com</li>
+            <li>Email: max.mezalon@gmail.com</li>
+            <li>Website: https://churchupdates.netlify.app</li>
         </ul>
     </div>
 </body>
@@ -172,7 +172,7 @@ router.get('/terms-of-service', (req, res) => {
     <p>The information on this app is provided on an "as is" basis. To the fullest extent permitted by law, we exclude all representations, warranties, and conditions relating to our app and the use of this app.</p>
 
     <h2>Contact Information</h2>
-    <p>Questions about the Terms of Service should be sent to us at support@updates-app.com.</p>
+    <p>Questions about the Terms of Service should be sent to us at max.mezalon@gmail.com.</p>
 </body>
 </html>
   `;
