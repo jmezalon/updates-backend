@@ -1,30 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const { authenticateToken } = require('./auth');
-const { getFullImageUrl } = require('../utils/imageUrlUtils');
+const { storage } = require('../config/cloudinary');
 
 const router = express.Router();
-
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
-  }
-});
 
 // File filter to only allow images
 const fileFilter = (req, file, cb) => {
@@ -36,7 +15,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage,
+  storage: storage, // Use Cloudinary storage
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
@@ -50,13 +29,14 @@ router.post('/image', authenticateToken, upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    // Return the URL where the image can be accessed
-    const imageUrl = getFullImageUrl(`/uploads/${req.file.filename}`);
+    // Cloudinary returns the secure_url directly
+    const imageUrl = req.file.path; // Cloudinary URL
     
     res.json({
       message: 'Image uploaded successfully',
       imageUrl: imageUrl,
-      filename: req.file.filename
+      filename: req.file.filename,
+      public_id: req.file.public_id // Cloudinary public ID for future reference
     });
   } catch (error) {
     console.error('Upload error:', error);
