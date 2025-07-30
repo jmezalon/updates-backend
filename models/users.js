@@ -1,47 +1,47 @@
-const { getDb } = require('../db');
+const dbWrapper = require('../db-wrapper');
 const bcrypt = require('bcryptjs');
 
 module.exports = {
   async getAll() {
-    const db = getDb();
-    const rows = await db.all('SELECT id, email, name, role, enrollment_status, avatar, created_at, updated_at FROM users ORDER BY id');
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all('SELECT id, email, name, role, enrollment_status, avatar, created_at, updated_at FROM users ORDER BY id');
     return rows;
   },
 
   async getById(id) {
-    const db = getDb();
-    const row = await db.get('SELECT id, email, name, role, enrollment_status, avatar, created_at, updated_at FROM users WHERE id = ?', [id]);
+    await dbWrapper.initialize();
+    const row = await dbWrapper.get('SELECT id, email, name, role, enrollment_status, avatar, created_at, updated_at FROM users WHERE id = ?', [id]);
     return row;
   },
 
   async getByIdWithPassword(id) {
-    const db = getDb();
-    const row = await db.get('SELECT id, email, name, role, enrollment_status, password_hash, created_at, updated_at FROM users WHERE id = ?', [id]);
+    await dbWrapper.initialize();
+    const row = await dbWrapper.get('SELECT id, email, name, role, enrollment_status, password_hash, created_at, updated_at FROM users WHERE id = ?', [id]);
     return row;
   },
 
   async getByEmail(email) {
-    const db = getDb();
-    const row = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+    await dbWrapper.initialize();
+    const row = await dbWrapper.get('SELECT * FROM users WHERE email = ?', [email]);
     return row;
   },
 
   async create(data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const { email, password, name, role = 'church_admin' } = data;
     
     // Hash the password
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
     
-    const result = await db.run(
+    const result = await dbWrapper.insert(
       `INSERT INTO users (email, password_hash, name, role)
        VALUES (?, ?, ?, ?)`,
       [email, password_hash, name, role]
     );
     
     // Get the inserted record (without password hash)
-    const inserted = await db.get(
+    const inserted = await dbWrapper.get(
       'SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?', 
       [result.lastID]
     );
