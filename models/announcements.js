@@ -1,9 +1,9 @@
-const { getDb } = require('../db');
+const dbWrapper = require('../db-wrapper');
 
 const Announcements = {
   async findAll() {
-    const db = getDb();
-    const rows = await db.all(`
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -13,8 +13,8 @@ const Announcements = {
   },
 
   async findAllByChurch(churchId) {
-    const db = getDb();
-    const rows = await db.all(`
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -25,8 +25,8 @@ const Announcements = {
   },
 
   async findWeeklyByChurch(churchId) {
-    const db = getDb();
-    const rows = await db.all(`
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -41,8 +41,8 @@ const Announcements = {
   },
 
   async findByType(type) {
-    const db = getDb();
-    const rows = await db.all(`
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -53,8 +53,8 @@ const Announcements = {
   },
 
   async findSpecial() {
-    const db = getDb();
-    const rows = await db.all(`
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -65,8 +65,8 @@ const Announcements = {
   },
 
   async findById(id) {
-    const db = getDb();
-    const row = await db.get(`
+    await dbWrapper.initialize();
+    const row = await dbWrapper.get(`
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
@@ -76,9 +76,9 @@ const Announcements = {
   },
 
   async create(churchId, data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const { title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day } = data;
-    const result = await db.run(`
+    const result = await dbWrapper.run(`
       INSERT INTO announcements (church_id, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [churchId, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day]);
@@ -89,7 +89,7 @@ const Announcements = {
   },
 
   async update(id, data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const fields = [];
     const values = [];
     
@@ -99,7 +99,7 @@ const Announcements = {
     }
     values.push(id);
     
-    await db.run(`
+    await dbWrapper.run(`
       UPDATE announcements SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP 
       WHERE id = ?
     `, values);
@@ -110,8 +110,8 @@ const Announcements = {
   },
 
   async remove(id) {
-    const db = getDb();
-    await db.run('DELETE FROM announcements WHERE id = ?', [id]);
+    await dbWrapper.initialize();
+    await dbWrapper.run('DELETE FROM announcements WHERE id = ?', [id]);
   }
 };
 

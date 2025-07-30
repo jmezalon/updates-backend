@@ -49,7 +49,7 @@ module.exports = {
   },
 
   async update(id, data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const fields = [];
     const values = [];
     
@@ -86,14 +86,14 @@ module.exports = {
   },
 
   async remove(id) {
-    const db = getDb();
-    await db.run('DELETE FROM users WHERE id = ?', [id]);
+    await dbWrapper.initialize();
+    await dbWrapper.run('DELETE FROM users WHERE id = ?', [id]);
     return true;
   },
 
   async validatePassword(email, password) {
-    const db = getDb();
-    const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+    await dbWrapper.initialize();
+    const user = await dbWrapper.get('SELECT * FROM users WHERE email = ?', [email]);
     
     if (!user) {
       return null;

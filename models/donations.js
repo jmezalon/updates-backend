@@ -1,9 +1,9 @@
-const { getDb } = require('../db');
+const dbWrapper = require('../db-wrapper');
 
 const Donations = {
   async findAllByChurch(churchId) {
-    const db = getDb();
-    const rows = await db.all(
+    await dbWrapper.initialize();
+    const rows = await dbWrapper.all(
       'SELECT * FROM donations WHERE church_id = ? ORDER BY method',
       [churchId]
     );
@@ -11,23 +11,22 @@ const Donations = {
   },
 
   async create(churchId, data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const { method, contact_name, contact_info, note } = data;
-    const result = await db.run(
-      `INSERT INTO donations (church_id, method, contact_name, contact_info, note)
+    const result = await dbWrapper.insert(`INSERT INTO donations (church_id, method, contact_name, contact_info, note)
        VALUES (?, ?, ?, ?, ?)`,
       [churchId, method, contact_name, contact_info, note]
     );
     
     // Get the inserted record
-    const inserted = await db.get('SELECT * FROM donations WHERE id = ?', [result.lastID]);
+    const inserted = await dbWrapper.get('SELECT * FROM donations WHERE id = ?', [result.lastID]);
     return inserted;
   },
 
   async update(id, data) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const { method, contact_name, contact_info, note } = data;
-    await db.run(
+    await dbWrapper.run(
       `UPDATE donations 
        SET method = ?, contact_name = ?, contact_info = ?, note = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
@@ -35,13 +34,13 @@ const Donations = {
     );
     
     // Get the updated record
-    const updated = await db.get('SELECT * FROM donations WHERE id = ?', [id]);
+    const updated = await dbWrapper.get('SELECT * FROM donations WHERE id = ?', [id]);
     return updated;
   },
 
   async remove(id) {
-    const db = getDb();
-    await db.run('DELETE FROM donations WHERE id = ?', [id]);
+    await dbWrapper.initialize();
+    await dbWrapper.run('DELETE FROM donations WHERE id = ?', [id]);
   }
 };
 

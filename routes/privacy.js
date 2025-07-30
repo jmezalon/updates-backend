@@ -95,7 +95,7 @@ router.get('/privacy-policy', (req, res) => {
         <p>If you have any questions about this Privacy Policy, please contact us:</p>
         <ul>
             <li>Email: max.mezalon@gmail.com</li>
-            <li>Website: https://churchupdates.netlify.app</li>
+            <li>Website: https://www.linkedin.com/in/max-mezalon/</li>
         </ul>
     </div>
 </body>
