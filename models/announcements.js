@@ -31,7 +31,7 @@ const Announcements = {
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
       WHERE a.church_id = ? 
-        AND (a.type = 'weekly' OR (a.is_special = 0 AND a.recurrence_rule IS NOT NULL))
+        AND (a.type = 'weekly' OR (a.is_special = false AND a.recurrence_rule IS NOT NULL))
       ORDER BY 
         CASE WHEN a.day IS NULL THEN 1 ELSE 0 END,
         a.day ASC,
@@ -58,7 +58,7 @@ const Announcements = {
       SELECT a.*, c.name as church_name, c.logo_url as church_logo 
       FROM announcements a 
       JOIN churches c ON a.church_id = c.id 
-      WHERE a.is_special = 1 
+      WHERE a.is_special = true 
       ORDER BY a.posted_at DESC, a.created_at DESC
     `);
     return rows;
