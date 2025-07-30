@@ -34,6 +34,21 @@ async function fixPostgresSchema() {
       `ALTER TABLE churches ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
       `ALTER TABLE churches ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
       
+      // Ensure all events columns exist (models expect start_datetime, end_datetime, etc.)
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS start_datetime TIMESTAMP`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS end_datetime TIMESTAMP`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS price DECIMAL(10,2)`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255)`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS website VARCHAR(500)`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS favorites_count INTEGER DEFAULT 0`,
+      
+      // Ensure all announcements columns exist (models expect posted_at)
+      `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+      `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS announcement_type VARCHAR(100)`,
+      `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`,
+      
       // Create missing tables if they don't exist
       `CREATE TABLE IF NOT EXISTS church_admin_assignments (
         id SERIAL PRIMARY KEY,
