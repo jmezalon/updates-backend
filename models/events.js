@@ -1,5 +1,31 @@
 const dbWrapper = require('../db-wrapper');
 
+// Helper function to serialize datetime fields as ISO strings
+const serializeDatetimes = (event) => {
+  if (!event) return event;
+  
+  const serialized = { ...event };
+  
+  // Convert Date objects to ISO strings for JSON serialization
+  if (serialized.start_datetime instanceof Date) {
+    serialized.start_datetime = serialized.start_datetime.toISOString();
+  }
+  if (serialized.end_datetime instanceof Date) {
+    serialized.end_datetime = serialized.end_datetime.toISOString();
+  }
+  if (serialized.created_at instanceof Date) {
+    serialized.created_at = serialized.created_at.toISOString();
+  }
+  if (serialized.updated_at instanceof Date) {
+    serialized.updated_at = serialized.updated_at.toISOString();
+  }
+  if (serialized.event_date instanceof Date) {
+    serialized.event_date = serialized.event_date.toISOString();
+  }
+  
+  return serialized;
+};
+
 module.exports = {
   async getAll() {
     await dbWrapper.initialize();
@@ -12,7 +38,7 @@ module.exports = {
        GROUP BY e.id, c.id
        ORDER BY e.start_datetime ASC`
     );
-    return rows;
+    return rows.map(serializeDatetimes);
   },
   async getAllByChurch(churchId) {
     await dbWrapper.initialize();
@@ -20,7 +46,7 @@ module.exports = {
       'SELECT * FROM events WHERE church_id = ? ORDER BY start_datetime',
       [churchId]
     );
-    return rows;
+    return rows.map(serializeDatetimes);
   },
   async getById(id) {
     await dbWrapper.initialize();
@@ -34,7 +60,7 @@ module.exports = {
        GROUP BY e.id, c.id`,
       [id]
     );
-    return row;
+    return serializeDatetimes(row);
   },
   async create(churchId, data) {
     await dbWrapper.initialize();
@@ -61,7 +87,7 @@ module.exports = {
     
     // Get the inserted record
     const inserted = await dbWrapper.get('SELECT * FROM events WHERE id = ?', [result.lastID]);
-    return inserted;
+    return serializeDatetimes(inserted);
   },
   async update(id, data) {
     await dbWrapper.initialize();
@@ -94,7 +120,7 @@ module.exports = {
     );
     // Get the updated record
     const updated = await dbWrapper.get('SELECT * FROM events WHERE id = ?', [id]);
-    return updated;
+    return serializeDatetimes(updated);
   },
   async remove(id) {
     await dbWrapper.initialize();
