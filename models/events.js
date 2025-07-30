@@ -39,6 +39,21 @@ module.exports = {
   async create(churchId, data) {
     await dbWrapper.initialize();
     const { title, description, location, start_datetime, end_datetime, image_url, price, contact_email, contact_phone, website, favorites_count } = data;
+    
+    // Validate date fields
+    if (start_datetime && start_datetime !== null) {
+      const startDate = new Date(start_datetime);
+      if (isNaN(startDate.getTime())) {
+        throw new Error('Invalid start_datetime format');
+      }
+    }
+    
+    if (end_datetime && end_datetime !== null) {
+      const endDate = new Date(end_datetime);
+      if (isNaN(endDate.getTime())) {
+        throw new Error('Invalid end_datetime format');
+      }
+    }
     const result = await dbWrapper.insert(`INSERT INTO events (church_id, title, description, location, start_datetime, end_datetime, image_url, price, contact_email, contact_phone, website, favorites_count)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [churchId, title, description, location, start_datetime, end_datetime, image_url, price, contact_email, contact_phone, website, favorites_count || 0]
@@ -50,6 +65,22 @@ module.exports = {
   },
   async update(id, data) {
     await dbWrapper.initialize();
+    
+    // Validate date fields if they exist in the update data
+    if (data.start_datetime && data.start_datetime !== null) {
+      const startDate = new Date(data.start_datetime);
+      if (isNaN(startDate.getTime())) {
+        throw new Error('Invalid start_datetime format');
+      }
+    }
+    
+    if (data.end_datetime && data.end_datetime !== null) {
+      const endDate = new Date(data.end_datetime);
+      if (isNaN(endDate.getTime())) {
+        throw new Error('Invalid end_datetime format');
+      }
+    }
+    
     const fields = [];
     const values = [];
     for (const key in data) {

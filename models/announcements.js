@@ -78,6 +78,28 @@ const Announcements = {
   async create(churchId, data) {
     await dbWrapper.initialize();
     const { title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day } = data;
+    
+    // Validate date fields
+    if (posted_at && posted_at !== null) {
+      const postedDate = new Date(posted_at);
+      if (isNaN(postedDate.getTime())) {
+        throw new Error('Invalid posted_at format');
+      }
+    }
+    
+    if (start_time && start_time !== null) {
+      const startTime = new Date(start_time);
+      if (isNaN(startTime.getTime())) {
+        throw new Error('Invalid start_time format');
+      }
+    }
+    
+    if (end_time && end_time !== null) {
+      const endTime = new Date(end_time);
+      if (isNaN(endTime.getTime())) {
+        throw new Error('Invalid end_time format');
+      }
+    }
     const result = await dbWrapper.run(`
       INSERT INTO announcements (church_id, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -90,6 +112,29 @@ const Announcements = {
 
   async update(id, data) {
     await dbWrapper.initialize();
+    
+    // Validate date fields if they exist in the update data
+    if (data.posted_at && data.posted_at !== null) {
+      const postedDate = new Date(data.posted_at);
+      if (isNaN(postedDate.getTime())) {
+        throw new Error('Invalid posted_at format');
+      }
+    }
+    
+    if (data.start_time && data.start_time !== null) {
+      const startTime = new Date(data.start_time);
+      if (isNaN(startTime.getTime())) {
+        throw new Error('Invalid start_time format');
+      }
+    }
+    
+    if (data.end_time && data.end_time !== null) {
+      const endTime = new Date(data.end_time);
+      if (isNaN(endTime.getTime())) {
+        throw new Error('Invalid end_time format');
+      }
+    }
+    
     const fields = [];
     const values = [];
     
