@@ -285,7 +285,32 @@ module.exports = {
       WHERE uel.user_id = ?
       ORDER BY uel.created_at DESC
     `, [userId]);
-    return events;
+    
+    // Serialize datetime fields properly
+    return events.map(event => {
+      if (!event) return event;
+      
+      const serialized = { ...event };
+      
+      // Convert Date objects to ISO strings for JSON serialization
+      if (serialized.start_datetime instanceof Date) {
+        serialized.start_datetime = serialized.start_datetime.toISOString();
+      }
+      if (serialized.end_datetime instanceof Date) {
+        serialized.end_datetime = serialized.end_datetime.toISOString();
+      }
+      if (serialized.created_at instanceof Date) {
+        serialized.created_at = serialized.created_at.toISOString();
+      }
+      if (serialized.updated_at instanceof Date) {
+        serialized.updated_at = serialized.updated_at.toISOString();
+      }
+      if (serialized.liked_at instanceof Date) {
+        serialized.liked_at = serialized.liked_at.toISOString();
+      }
+      
+      return serialized;
+    });
   },
 
   async isLikingEvent(userId, eventId) {
