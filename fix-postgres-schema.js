@@ -34,7 +34,9 @@ async function fixPostgresSchema() {
       `ALTER TABLE churches ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
       `ALTER TABLE churches ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
       
-      // Ensure all events columns exist (models expect start_datetime, end_datetime, etc.)
+      // Fix events table schema mismatches
+      `ALTER TABLE events DROP CONSTRAINT IF EXISTS events_event_date_not_null`,
+      `ALTER TABLE events ALTER COLUMN event_date DROP NOT NULL`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS start_datetime TIMESTAMP`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS end_datetime TIMESTAMP`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`,
@@ -43,6 +45,7 @@ async function fixPostgresSchema() {
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS website VARCHAR(500)`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS favorites_count INTEGER DEFAULT 0`,
+      `ALTER TABLE events ADD COLUMN IF NOT EXISTS created_by INTEGER`,
       
       // Ensure all announcements columns exist (models expect posted_at)
       `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
