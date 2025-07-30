@@ -37,6 +37,7 @@ async function fixPostgresSchema() {
       // Fix events table schema mismatches
       `ALTER TABLE events DROP CONSTRAINT IF EXISTS events_event_date_not_null`,
       `ALTER TABLE events ALTER COLUMN event_date DROP NOT NULL`,
+      `ALTER TABLE events ALTER COLUMN created_by DROP NOT NULL`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS start_datetime TIMESTAMP`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS end_datetime TIMESTAMP`,
       `ALTER TABLE events ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`,
