@@ -35,14 +35,14 @@ module.exports = {
     const password_hash = await bcrypt.hash(password, saltRounds);
     
     const result = await dbWrapper.insert(
-      `INSERT INTO users (email, password_hash, name, role)
-       VALUES (?, ?, ?, ?)`,
-      [email, password_hash, name, role]
+      `INSERT INTO users (email, password_hash, name, role, enrollment_status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [email, password_hash, name, role, 'none']
     );
     
     // Get the inserted record (without password hash)
     const inserted = await dbWrapper.get(
-      'SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?', 
+      'SELECT id, email, name, role, enrollment_status, created_at, updated_at FROM users WHERE id = ?', 
       [result.lastID]
     );
     return inserted;
@@ -127,10 +127,10 @@ module.exports = {
       [userId, churchId]
     );
     
-    // Update user enrollment status to 'assigned'
+    // Update user enrollment status to 'completed'
     await dbWrapper.run(
       'UPDATE users SET enrollment_status = ? WHERE id = ?',
-      ['assigned', userId]
+      ['completed', userId]
     );
     
     return result.lastID;
