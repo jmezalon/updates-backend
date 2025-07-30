@@ -24,14 +24,17 @@ class DatabaseWrapper {
   }
 
   async run(query, params = []) {
+    const result = await this.query(query, params);
     if (this.isPostgres) {
-      const result = await this.db.query(query, params);
       return {
         lastID: result.rows[0]?.id || null,
         changes: result.rowCount || 0
       };
     } else {
-      return await this.db.run(query, params);
+      return {
+        lastID: result.lastID,
+        changes: result.changes
+      };
     }
   }
 
@@ -50,13 +53,17 @@ class DatabaseWrapper {
         returningQuery = cleanQuery + ' RETURNING id';
       }
       
-      const result = await this.db.query(returningQuery, params);
+      const result = await this.query(returningQuery, params);
       return {
         lastID: result.rows[0]?.id || null,
         changes: result.rowCount || 0
       };
     } else {
-      return await this.db.run(query, params);
+      const result = await this.query(query, params);
+      return {
+        lastID: result.lastID,
+        changes: result.changes
+      };
     }
   }
 
