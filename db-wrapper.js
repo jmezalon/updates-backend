@@ -12,6 +12,7 @@ class DatabaseWrapper {
   }
 
   async all(query, params = []) {
+    console.log('DatabaseWrapper.all() called with query:', query);
     if (this.isPostgres) {
       const result = await this.db.query(query, params);
       return result.rows;
@@ -21,6 +22,7 @@ class DatabaseWrapper {
   }
 
   async get(query, params = []) {
+    console.log('DatabaseWrapper.get() called with query:', query);
     if (this.isPostgres) {
       const result = await this.db.query(query, params);
       return result.rows[0] || null;
@@ -83,7 +85,17 @@ class DatabaseWrapper {
     const { query: convertedQuery, params: convertedParams } = this.convertQuery(query, params);
     
     if (this.isPostgres) {
-      return await this.db.query(convertedQuery, convertedParams);
+      // Log the exact query being executed for debugging
+      console.log('PostgreSQL Query:', convertedQuery);
+      console.log('Parameters:', convertedParams);
+      try {
+        return await this.db.query(convertedQuery, convertedParams);
+      } catch (error) {
+        console.error('PostgreSQL Query Error:', error.message);
+        console.error('Failed Query:', convertedQuery);
+        console.error('Failed Parameters:', convertedParams);
+        throw error;
+      }
     } else {
       // For SQLite, determine the appropriate method based on query type
       const queryType = convertedQuery.trim().toUpperCase();
