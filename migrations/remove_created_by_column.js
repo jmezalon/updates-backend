@@ -43,24 +43,6 @@ async function removeCreatedByColumn() {
     
     console.log('📋 Created_by column found. Checking if it contains any data...');
     
-    // Check if there's any data in the content column before dropping it
-    // let createdByRows;
-    // if (isPostgres) {
-    //   const result = await db.query(`
-    //     SELECT COUNT(*) as count 
-    //     FROM announcements 
-    //     WHERE created_by IS NOT NULL AND created_by != ''
-    //   `);
-    //   createdByRows = parseInt(result.rows[0].count);
-    // } else {
-    //   const result = await db.get(`
-    //     SELECT COUNT(*) as count 
-    //     FROM announcements 
-    //     WHERE created_by IS NOT NULL AND created_by != ''
-    //   `);
-    //   createdByRows = result.count;
-    // }
-    
     // Drop the created_by column
     if (isPostgres) {
       await db.query(`ALTER TABLE announcements DROP COLUMN created_by`);
