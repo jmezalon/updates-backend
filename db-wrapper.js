@@ -45,7 +45,17 @@ class DatabaseWrapper {
   async insert(query, params = []) {
     if (this.isPostgres) {
       // Add RETURNING id to PostgreSQL INSERT queries
-      const returningQuery = query.includes('RETURNING') ? query : query + ' RETURNING id';
+      const trimmedQuery = query.trim();
+      let returningQuery;
+      
+      if (trimmedQuery.includes('RETURNING')) {
+        returningQuery = trimmedQuery;
+      } else {
+        // Remove trailing semicolon if present, add RETURNING id, then add semicolon back
+        const cleanQuery = trimmedQuery.replace(/;\s*$/, '');
+        returningQuery = cleanQuery + ' RETURNING id';
+      }
+      
       const result = await this.db.query(returningQuery, params);
       return {
         lastID: result.rows[0]?.id || null,
@@ -60,10 +70,13 @@ class DatabaseWrapper {
   convertQuery(query, params = []) {
     if (this.isPostgres && query.includes('?')) {
       let paramIndex = 1;
-      const convertedQuery = query.replace(/\?/g, () => `$${paramIndex++}`);
+      // Trim the query and ensure proper formatting
+      const trimmedQuery = query.trim();
+      const convertedQuery = trimmedQuery.replace(/\?/g, () => `$${paramIndex++}`);
       return { query: convertedQuery, params };
     }
-    return { query, params };
+    // Always trim the query to prevent whitespace issues
+    return { query: query.trim(), params };
   }
 
   async query(query, params = []) {
@@ -75,7 +88,7 @@ class DatabaseWrapper {
       // For SQLite, determine the appropriate method based on query type
       const queryType = convertedQuery.trim().toUpperCase();
       if (queryType.startsWith('SELECT')) {
-        if (convertedQuery.includes('LIMIT 1') || queryType.includes('WHERE') && !queryType.includes('ORDER BY')) {
+        if (convertedQuery.toUpperCase().includes('LIMIT 1')) {
           return { rows: [await this.db.get(convertedQuery, convertedParams)] };
         } else {
           return { rows: await this.db.all(convertedQuery, convertedParams) };
