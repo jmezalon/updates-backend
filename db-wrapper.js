@@ -13,22 +13,14 @@ class DatabaseWrapper {
 
   async all(query, params = []) {
     console.log('DatabaseWrapper.all() called with query:', query);
-    if (this.isPostgres) {
-      const result = await this.db.query(query, params);
-      return result.rows;
-    } else {
-      return await this.db.all(query, params);
-    }
+    const result = await this.query(query, params);
+    return result.rows || [];
   }
 
   async get(query, params = []) {
     console.log('DatabaseWrapper.get() called with query:', query);
-    if (this.isPostgres) {
-      const result = await this.db.query(query, params);
-      return result.rows[0] || null;
-    } else {
-      return await this.db.get(query, params);
-    }
+    const result = await this.query(query, params);
+    return result.rows[0] || null;
   }
 
   async run(query, params = []) {
