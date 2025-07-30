@@ -72,13 +72,13 @@ module.exports = {
     }
     
     values.push(id);
-    await db.run(
+    await dbWrapper.run(
       `UPDATE users SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       values
     );
     
     // Get the updated record (without password hash)
-    const updated = await db.get(
+    const updated = await dbWrapper.get(
       'SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?', 
       [id]
     );
@@ -110,8 +110,8 @@ module.exports = {
   },
 
   async getChurchAssignments(userId) {
-    const db = getDb();
-    const assignments = await db.all(`
+    await dbWrapper.initialize();
+    const assignments = await dbWrapper.all(`
       SELECT ca.*, c.name as church_name 
       FROM church_admin_assignments ca
       JOIN churches c ON ca.church_id = c.id
@@ -121,14 +121,14 @@ module.exports = {
   },
 
   async assignToChurch(userId, churchId) {
-    const db = getDb();
-    const result = await db.run(
+    await dbWrapper.initialize();
+    const result = await dbWrapper.run(
       'INSERT INTO church_admin_assignments (user_id, church_id) VALUES (?, ?)',
       [userId, churchId]
     );
     
     // Update user enrollment status to 'assigned'
-    await db.run(
+    await dbWrapper.run(
       'UPDATE users SET enrollment_status = ? WHERE id = ?',
       ['assigned', userId]
     );
@@ -137,23 +137,23 @@ module.exports = {
   },
 
   async updateEnrollmentStatus(userId, status) {
-    const db = await getDb();
-    await db.run(
+    await dbWrapper.initialize();
+    await dbWrapper.run(
       'UPDATE users SET enrollment_status = ? WHERE id = ?',
       [status, userId]
     );
   },
 
   async updatePassword(id, newPasswordHash) {
-    const db = getDb();
-    await db.run('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newPasswordHash, id]);
+    await dbWrapper.initialize();
+    await dbWrapper.run('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newPasswordHash, id]);
     return true;
   },
 
   async setPasswordResetToken(email, token, expiresAt) {
-    const db = getDb();
+    await dbWrapper.initialize();
     const now = Date.now();
-    await db.run(
+    await dbWrapper.run(
       'UPDATE users SET password_reset_token = ?, password_reset_expires = ?, password_reset_requested_at = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?',
       [token, expiresAt, now, email]
     );
@@ -161,8 +161,8 @@ module.exports = {
   },
 
   async getByPasswordResetToken(token) {
-    const db = getDb();
-    const row = await db.get(
+    await dbWrapper.initialize();
+    const row = await dbWrapper.get(
       'SELECT id, email, name, role, password_reset_token, password_reset_expires FROM users WHERE password_reset_token = ?',
       [token]
     );
@@ -170,8 +170,8 @@ module.exports = {
   },
 
   async clearPasswordResetToken(id) {
-    const db = getDb();
-    await db.run(
+    await dbWrapper.initialize();
+    await dbWrapper.run(
       'UPDATE users SET password_reset_token = NULL, password_reset_expires = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [id]
     );
@@ -179,8 +179,8 @@ module.exports = {
   },
 
   async canRequestPasswordReset(email) {
-    const db = getDb();
-    const user = await db.get(
+    await dbWrapper.initialize();
+    const user = await dbWrapper.get(
       'SELECT password_reset_requested_at FROM users WHERE email = ?',
       [email]
     );
@@ -194,8 +194,8 @@ module.exports = {
   },
 
   async removeChurchAssignment(userId, churchId) {
-    const db = getDb();
-    await db.run(
+    await dbWrapper.initialize();
+    await dbWrapper.run(
       'DELETE FROM church_admin_assignments WHERE user_id = ? AND church_id = ?',
       [userId, churchId]
     );
@@ -204,9 +204,9 @@ module.exports = {
 
   // Church Following Methods
   async followChurch(userId, churchId) {
-    const db = getDb();
+    await dbWrapper.initialize();
     try {
-      const result = await db.run(
+      const result = await dbWrapper.run(
         'INSERT INTO user_church_follows (user_id, church_id) VALUES (?, ?)',
         [userId, churchId]
       );
@@ -220,8 +220,8 @@ module.exports = {
   },
 
   async unfollowChurch(userId, churchId) {
-    const db = getDb();
-    const result = await db.run(
+    await dbWrapper.initialize();
+    const result = await dbWrapper.run(
       'DELETE FROM user_church_follows WHERE user_id = ? AND church_id = ?',
       [userId, churchId]
     );
@@ -229,8 +229,8 @@ module.exports = {
   },
 
   async getFollowedChurches(userId) {
-    const db = getDb();
-    const churches = await db.all(`
+    await dbWrapper.initialize();
+    const churches = await dbWrapper.all(`
       SELECT c.*, ucf.created_at as followed_at
       FROM churches c
       JOIN user_church_follows ucf ON c.id = ucf.church_id
@@ -241,8 +241,8 @@ module.exports = {
   },
 
   async isFollowingChurch(userId, churchId) {
-    const db = getDb();
-    const follow = await db.get(
+    await dbWrapper.initialize();
+    const follow = await dbWrapper.get(
       'SELECT id FROM user_church_follows WHERE user_id = ? AND church_id = ?',
       [userId, churchId]
     );
@@ -251,9 +251,9 @@ module.exports = {
 
   // Event Liking Methods
   async likeEvent(userId, eventId) {
-    const db = getDb();
+    await dbWrapper.initialize();
     try {
-      const result = await db.run(
+      const result = await dbWrapper.run(
         'INSERT INTO user_event_likes (user_id, event_id) VALUES (?, ?)',
         [userId, eventId]
       );
@@ -267,8 +267,8 @@ module.exports = {
   },
 
   async unlikeEvent(userId, eventId) {
-    const db = getDb();
-    const result = await db.run(
+    await dbWrapper.initialize();
+    const result = await dbWrapper.run(
       'DELETE FROM user_event_likes WHERE user_id = ? AND event_id = ?',
       [userId, eventId]
     );
@@ -276,8 +276,8 @@ module.exports = {
   },
 
   async getLikedEvents(userId) {
-    const db = getDb();
-    const events = await db.all(`
+    await dbWrapper.initialize();
+    const events = await dbWrapper.all(`
       SELECT e.*, c.name as church_name, c.logo_url as church_logo, uel.created_at as liked_at
       FROM events e
       JOIN churches c ON e.church_id = c.id
@@ -289,8 +289,8 @@ module.exports = {
   },
 
   async isLikingEvent(userId, eventId) {
-    const db = getDb();
-    const like = await db.get(
+    await dbWrapper.initialize();
+    const like = await dbWrapper.get(
       'SELECT id FROM user_event_likes WHERE user_id = ? AND event_id = ?',
       [userId, eventId]
     );
