@@ -5,8 +5,8 @@ require('dotenv').config();
 const createTransporter = () => {
   const config = {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: false, // false for 587, true for 465
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: true, // false for 587, true for 465
     requireTLS: true, // Use STARTTLS
     auth: {
       user: process.env.SMTP_USER,
