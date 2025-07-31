@@ -5,15 +5,17 @@ require('dotenv').config();
 const createTransporter = () => {
   const config = {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: true, // true for 465, false for other ports
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: false, // false for 587, true for 465
+    requireTLS: true, // Use STARTTLS
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
     // Additional options for better compatibility
     tls: {
-      rejectUnauthorized: false // Allow self-signed certificates
+      rejectUnauthorized: false, // Allow self-signed certificates
+      ciphers: 'SSLv3' // Support older SSL versions if needed
     },
     connectionTimeout: 60000, // 60 seconds
     greetingTimeout: 30000, // 30 seconds
