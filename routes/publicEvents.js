@@ -120,6 +120,13 @@ router.get('/:id', async (req, res, next) => {
             font-weight: 600;
           }
           
+          .download-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+          }
+          
           .download-button {
             background: white;
             color: #e74c3c;
@@ -130,10 +137,44 @@ router.get('/:id', async (req, res, next) => {
             text-decoration: none;
             display: inline-block;
             transition: transform 0.2s;
+            margin: 0 5px;
           }
           
           .download-button:hover {
             transform: scale(1.05);
+          }
+          
+          .ios-button {
+            background: white;
+            color: #e74c3c;
+          }
+          
+          .web-button {
+            background: #3498db;
+            color: white;
+          }
+          
+          .android-coming-soon {
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-style: italic;
+          }
+          
+          .footer-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+          }
+          
+          .android-message {
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-style: italic;
+            text-align: center;
           }
           
           .event-image {
@@ -253,7 +294,12 @@ router.get('/:id', async (req, res, next) => {
           <!-- App Download Banner -->
           <div class="app-banner">
             <div class="app-banner-text">📱 Get the full Updates experience!</div>
-            <a href="#" class="download-button" onclick="promptAppDownload()">Download App</a>
+            <div class="download-buttons">
+              <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
+                 Download for iOS
+              </a>
+              <div class="android-coming-soon">🤖 Android app coming soon!</div>
+            </div>
           </div>
           
           <!-- Header -->
@@ -317,19 +363,22 @@ router.get('/:id', async (req, res, next) => {
           <div class="footer">
             <div class="footer-title">Want to discover more events?</div>
             <div class="footer-text">
-              Our mobile app is coming soon! In the meantime, visit our web app to explore events from churches in your area, 
+              Download our iOS app or visit our web app to explore events from churches in your area, 
               save favorites, and never miss what's happening in your community.
             </div>
-            <a href="#" class="download-button" onclick="promptAppDownload()">Visit Web App</a>
+            <div class="footer-buttons">
+              <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
+                 Download for iOS
+              </a>
+              <a href="https://mychurchupdates.netlify.app" target="_blank" class="download-button web-button">
+                🌐 Visit Web App
+              </a>
+            </div>
+            <div class="android-message">🤖 Android app coming soon!</div>
           </div>
         </div>
         
         <script>
-          function promptAppDownload() {
-            // Redirect to web app while mobile apps are under review
-            window.open('https://mychurchupdates.netlify.app', '_blank');
-          }
-          
           // Add smooth scroll behavior
           document.documentElement.style.scrollBehavior = 'smooth';
         </script>
