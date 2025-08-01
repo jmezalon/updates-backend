@@ -35,7 +35,24 @@ const Announcements = {
       ORDER BY 
         CASE WHEN a.day IS NULL THEN 1 ELSE 0 END,
         a.day ASC,
-        a.start_time ASC
+        CASE 
+          WHEN a.start_time IS NULL THEN '99:99'
+          WHEN UPPER(a.start_time) LIKE '%AM' THEN 
+            CASE 
+              WHEN SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) = '12' THEN 
+                '00' || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
+              ELSE 
+                PRINTF('%02d', CAST(SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) AS INTEGER)) || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
+            END
+          WHEN UPPER(a.start_time) LIKE '%PM' THEN 
+            CASE 
+              WHEN SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) = '12' THEN 
+                '12' || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
+              ELSE 
+                PRINTF('%02d', CAST(SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) AS INTEGER) + 12) || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
+            END
+          ELSE a.start_time
+        END ASC
     `, [churchId]);
     return rows;
   },
