@@ -34,27 +34,50 @@ const Announcements = {
         AND (a.type = 'weekly' OR (a.is_special = false AND a.recurrence_rule IS NOT NULL))
       ORDER BY 
         CASE WHEN a.day IS NULL THEN 1 ELSE 0 END,
-        a.day ASC,
-        CASE 
-          WHEN a.start_time IS NULL THEN '99:99'
-          WHEN UPPER(a.start_time) LIKE '%AM' THEN 
-            CASE 
-              WHEN SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) = '12' THEN 
-                '00' || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
-              ELSE 
-                PRINTF('%02d', CAST(SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) AS INTEGER)) || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
-            END
-          WHEN UPPER(a.start_time) LIKE '%PM' THEN 
-            CASE 
-              WHEN SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) = '12' THEN 
-                '12' || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
-              ELSE 
-                PRINTF('%02d', CAST(SUBSTR(a.start_time, 1, INSTR(a.start_time, ':') - 1) AS INTEGER) + 12) || SUBSTR(a.start_time, INSTR(a.start_time, ':'), LENGTH(a.start_time) - INSTR(a.start_time, ':') - 2)
-            END
-          ELSE a.start_time
-        END ASC
+        a.day ASC
     `, [churchId]);
-    return rows;
+    
+    // Sort by time in JavaScript to handle AM/PM properly across databases
+    const sortedRows = rows.sort((a, b) => {
+      // First sort by day (already handled in SQL, but ensure consistency)
+      const dayA = a.day === null ? 999 : a.day;
+      const dayB = b.day === null ? 999 : b.day;
+      if (dayA !== dayB) return dayA - dayB;
+      
+      // Then sort by time with AM/PM handling
+      const timeA = this.convertTo24Hour(a.start_time);
+      const timeB = this.convertTo24Hour(b.start_time);
+      return timeA.localeCompare(timeB);
+    });
+    
+    return sortedRows;
+  },
+  
+  // Helper function to convert 12-hour time to 24-hour format for sorting
+  convertTo24Hour(timeStr) {
+    if (!timeStr || timeStr === '') return '99:99'; // Sort empty times last
+    
+    const upperTime = timeStr.toUpperCase().trim();
+    if (!upperTime.includes('AM') && !upperTime.includes('PM')) {
+      return timeStr; // Return as-is if no AM/PM
+    }
+    
+    const isAM = upperTime.includes('AM');
+    const isPM = upperTime.includes('PM');
+    
+    // Extract time part (remove AM/PM)
+    const timePart = upperTime.replace(/\s*(AM|PM)\s*/g, '').trim();
+    const [hours, minutes = '00'] = timePart.split(':');
+    
+    let hour24 = parseInt(hours, 10);
+    
+    if (isAM) {
+      if (hour24 === 12) hour24 = 0; // 12 AM = 00:xx
+    } else if (isPM) {
+      if (hour24 !== 12) hour24 += 12; // PM times except 12 PM
+    }
+    
+    return `${hour24.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
   },
 
   async findByType(type) {
@@ -105,18 +128,32 @@ const Announcements = {
     }
     
     if (start_time && start_time !== null) {
-      const startTime = new Date(start_time);
-      if (isNaN(startTime.getTime())) {
-        throw new Error('Invalid start_time format');
+    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+    if (typeof start_time === 'string' && start_time.trim() !== '') {
+      // If it's a time-only format (contains AM/PM), don't validate as Date
+      const isTimeOnly = /\b(AM|PM)\b/i.test(start_time) || /^\d{1,2}:\d{2}$/.test(start_time.trim());
+      if (!isTimeOnly) {
+        const startTime = new Date(start_time);
+        if (isNaN(startTime.getTime())) {
+          throw new Error('Invalid start_time format');
+        }
       }
     }
-    
-    if (end_time && end_time !== null) {
-      const endTime = new Date(end_time);
-      if (isNaN(endTime.getTime())) {
-        throw new Error('Invalid end_time format');
+  }
+  
+  if (end_time && end_time !== null) {
+    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+    if (typeof end_time === 'string' && end_time.trim() !== '') {
+      // If it's a time-only format (contains AM/PM), don't validate as Date
+      const isTimeOnly = /\b(AM|PM)\b/i.test(end_time) || /^\d{1,2}:\d{2}$/.test(end_time.trim());
+      if (!isTimeOnly) {
+        const endTime = new Date(end_time);
+        if (isNaN(endTime.getTime())) {
+          throw new Error('Invalid end_time format');
+        }
       }
     }
+  }
     const result = await dbWrapper.run(`
       INSERT INTO announcements (church_id, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -139,19 +176,32 @@ const Announcements = {
     }
     
     if (data.start_time && data.start_time !== null) {
-      const startTime = new Date(data.start_time);
-      if (isNaN(startTime.getTime())) {
-        throw new Error('Invalid start_time format');
+    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+    if (typeof data.start_time === 'string' && data.start_time.trim() !== '') {
+      // If it's a time-only format (contains AM/PM), don't validate as Date
+      const isTimeOnly = /\b(AM|PM)\b/i.test(data.start_time) || /^\d{1,2}:\d{2}$/.test(data.start_time.trim());
+      if (!isTimeOnly) {
+        const startTime = new Date(data.start_time);
+        if (isNaN(startTime.getTime())) {
+          throw new Error('Invalid start_time format');
+        }
       }
     }
-    
-    if (data.end_time && data.end_time !== null) {
-      const endTime = new Date(data.end_time);
-      if (isNaN(endTime.getTime())) {
-        throw new Error('Invalid end_time format');
+  }
+  
+  if (data.end_time && data.end_time !== null) {
+    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+    if (typeof data.end_time === 'string' && data.end_time.trim() !== '') {
+      // If it's a time-only format (contains AM/PM), don't validate as Date
+      const isTimeOnly = /\b(AM|PM)\b/i.test(data.end_time) || /^\d{1,2}:\d{2}$/.test(data.end_time.trim());
+      if (!isTimeOnly) {
+        const endTime = new Date(data.end_time);
+        if (isNaN(endTime.getTime())) {
+          throw new Error('Invalid end_time format');
+        }
       }
     }
-    
+  }
     const fields = [];
     const values = [];
     
