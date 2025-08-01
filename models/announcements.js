@@ -212,39 +212,49 @@ const Announcements = {
       }
     }
     
-    if (data.start_time && data.start_time !== null) {
-    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
-    if (typeof data.start_time === 'string' && data.start_time.trim() !== '') {
-      // If it's a time-only format (contains AM/PM), don't validate as Date
-      const isTimeOnly = /\b(AM|PM)\b/i.test(data.start_time) || /^\d{1,2}:\d{2}$/.test(data.start_time.trim());
-      if (!isTimeOnly) {
-        const startTime = new Date(data.start_time);
-        if (isNaN(startTime.getTime())) {
-          throw new Error('Invalid start_time format');
+    // Normalize time values before validation and saving
+    const normalizedData = { ...data };
+    if (data.start_time) {
+      normalizedData.start_time = this.normalizeTimeValue(data.start_time);
+    }
+    if (data.end_time) {
+      normalizedData.end_time = this.normalizeTimeValue(data.end_time);
+    }
+    
+    if (normalizedData.start_time && normalizedData.start_time !== null) {
+      // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+      if (typeof normalizedData.start_time === 'string' && normalizedData.start_time.trim() !== '') {
+        // If it's a time-only format (contains AM/PM), don't validate as Date
+        const isTimeOnly = /\b(AM|PM)\b/i.test(normalizedData.start_time) || /^\d{1,2}:\d{2}$/.test(normalizedData.start_time.trim());
+        if (!isTimeOnly) {
+          const startTime = new Date(normalizedData.start_time);
+          if (isNaN(startTime.getTime())) {
+            throw new Error('Invalid start_time format');
+          }
         }
       }
     }
-  }
-  
-  if (data.end_time && data.end_time !== null) {
-    // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
-    if (typeof data.end_time === 'string' && data.end_time.trim() !== '') {
-      // If it's a time-only format (contains AM/PM), don't validate as Date
-      const isTimeOnly = /\b(AM|PM)\b/i.test(data.end_time) || /^\d{1,2}:\d{2}$/.test(data.end_time.trim());
-      if (!isTimeOnly) {
-        const endTime = new Date(data.end_time);
-        if (isNaN(endTime.getTime())) {
-          throw new Error('Invalid end_time format');
+    
+    if (normalizedData.end_time && normalizedData.end_time !== null) {
+      // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
+      if (typeof normalizedData.end_time === 'string' && normalizedData.end_time.trim() !== '') {
+        // If it's a time-only format (contains AM/PM), don't validate as Date
+        const isTimeOnly = /\b(AM|PM)\b/i.test(normalizedData.end_time) || /^\d{1,2}:\d{2}$/.test(normalizedData.end_time.trim());
+        if (!isTimeOnly) {
+          const endTime = new Date(normalizedData.end_time);
+          if (isNaN(endTime.getTime())) {
+            throw new Error('Invalid end_time format');
+          }
         }
       }
     }
-  }
+    
     const fields = [];
     const values = [];
     
-    for (const key in data) {
+    for (const key in normalizedData) {
       fields.push(`${key} = ?`);
-      values.push(data[key]);
+      values.push(normalizedData[key]);
     }
     values.push(id);
     
