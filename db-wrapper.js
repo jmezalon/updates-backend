@@ -14,13 +14,15 @@ class DatabaseWrapper {
   async all(query, params = []) {
     console.log('DatabaseWrapper.all() called with query:', query);
     const result = await this.query(query, params);
-    return result.rows || [];
+    const rows = result.rows || [];
+    return this.serializeDates(rows);
   }
 
   async get(query, params = []) {
     console.log('DatabaseWrapper.get() called with query:', query);
     const result = await this.query(query, params);
-    return result.rows[0] || null;
+    const row = result.rows[0] || null;
+    return row ? this.serializeDates([row])[0] : null;
   }
 
   async run(query, params = []) {
@@ -78,6 +80,23 @@ class DatabaseWrapper {
     }
     // Always trim the query to prevent whitespace issues
     return { query: query.trim(), params };
+  }
+
+  // Helper method to serialize Date objects to ISO strings for proper JSON serialization
+  serializeDates(rows) {
+    if (!Array.isArray(rows)) return rows;
+    
+    return rows.map(row => {
+      if (!row || typeof row !== 'object') return row;
+      
+      const serializedRow = { ...row };
+      for (const [key, value] of Object.entries(serializedRow)) {
+        if (value instanceof Date) {
+          serializedRow[key] = value.toISOString();
+        }
+      }
+      return serializedRow;
+    });
   }
 
   async query(query, params = []) {

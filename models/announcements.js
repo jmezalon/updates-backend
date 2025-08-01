@@ -53,6 +53,39 @@ const Announcements = {
     return sortedRows;
   },
   
+  // Helper function to normalize time values - convert datetime strings to time-only format
+  normalizeTimeValue(timeValue) {
+    if (!timeValue || timeValue === '') return timeValue;
+    
+    // If it's already a time-only string (contains AM/PM or is HH:MM format), return as-is
+    if (typeof timeValue === 'string') {
+      const trimmed = timeValue.trim();
+      if (/\b(AM|PM)\b/i.test(trimmed) || /^\d{1,2}:\d{2}$/.test(trimmed)) {
+        return trimmed;
+      }
+      
+      // If it's an ISO datetime string, extract just the time part
+      if (trimmed.includes('T') && (trimmed.includes('Z') || trimmed.includes('+') || trimmed.includes('-'))) {
+        try {
+          const date = new Date(trimmed);
+          if (!isNaN(date.getTime())) {
+            // Convert to 12-hour format with AM/PM
+            return date.toLocaleTimeString('en-US', { 
+              hour: 'numeric', 
+              minute: '2-digit',
+              hour12: true 
+            });
+          }
+        } catch (e) {
+          // If parsing fails, return original value
+          return trimmed;
+        }
+      }
+    }
+    
+    return timeValue;
+  },
+
   // Helper function to convert 12-hour time to 24-hour format for sorting
   convertTo24Hour(timeStr) {
     if (!timeStr || timeStr === '') return '99:99'; // Sort empty times last
@@ -119,6 +152,10 @@ const Announcements = {
     await dbWrapper.initialize();
     const { title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day } = data;
     
+    // Normalize time values to convert datetime strings to time-only format
+    const normalizedStartTime = this.normalizeTimeValue(start_time);
+    const normalizedEndTime = this.normalizeTimeValue(end_time);
+    
     // Validate date fields
     if (posted_at && posted_at !== null) {
       const postedDate = new Date(posted_at);
@@ -127,13 +164,13 @@ const Announcements = {
       }
     }
     
-    if (start_time && start_time !== null) {
+    if (normalizedStartTime && normalizedStartTime !== null) {
     // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
-    if (typeof start_time === 'string' && start_time.trim() !== '') {
+    if (typeof normalizedStartTime === 'string' && normalizedStartTime.trim() !== '') {
       // If it's a time-only format (contains AM/PM), don't validate as Date
-      const isTimeOnly = /\b(AM|PM)\b/i.test(start_time) || /^\d{1,2}:\d{2}$/.test(start_time.trim());
+      const isTimeOnly = /\b(AM|PM)\b/i.test(normalizedStartTime) || /^\d{1,2}:\d{2}$/.test(normalizedStartTime.trim());
       if (!isTimeOnly) {
-        const startTime = new Date(start_time);
+        const startTime = new Date(normalizedStartTime);
         if (isNaN(startTime.getTime())) {
           throw new Error('Invalid start_time format');
         }
@@ -141,13 +178,13 @@ const Announcements = {
     }
   }
   
-  if (end_time && end_time !== null) {
+  if (normalizedEndTime && normalizedEndTime !== null) {
     // Allow time-only formats like "11:00 AM" or "5:00 PM" as well as full datetime strings
-    if (typeof end_time === 'string' && end_time.trim() !== '') {
+    if (typeof normalizedEndTime === 'string' && normalizedEndTime.trim() !== '') {
       // If it's a time-only format (contains AM/PM), don't validate as Date
-      const isTimeOnly = /\b(AM|PM)\b/i.test(end_time) || /^\d{1,2}:\d{2}$/.test(end_time.trim());
+      const isTimeOnly = /\b(AM|PM)\b/i.test(normalizedEndTime) || /^\d{1,2}:\d{2}$/.test(normalizedEndTime.trim());
       if (!isTimeOnly) {
-        const endTime = new Date(end_time);
+        const endTime = new Date(normalizedEndTime);
         if (isNaN(endTime.getTime())) {
           throw new Error('Invalid end_time format');
         }
@@ -157,7 +194,7 @@ const Announcements = {
     const result = await dbWrapper.run(`
       INSERT INTO announcements (church_id, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [churchId, title, description, image_url, posted_at, type, subcategory, start_time, end_time, recurrence_rule, is_special, day]);
+    `, [churchId, title, description, image_url, posted_at, type, subcategory, normalizedStartTime, normalizedEndTime, recurrence_rule, is_special, day]);
     
     // Get the inserted record with church info
     const inserted = await this.findById(result.lastID);
