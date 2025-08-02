@@ -170,12 +170,19 @@ router.post('/logout', authenticateToken, async (req, res) => {
       });
     }
     
-    // Blacklist the token so it can't be used again
-    await users.blacklistToken(token, req.user.userId);
-    
-    res.json({ 
-      message: 'Logged out successfully. Token has been invalidated.' 
-    });
+    // Blacklist the token so it can't be used again (gracefully handle if table doesn't exist)
+    try {
+      await users.blacklistToken(token, req.user.userId);
+      res.json({ 
+        message: 'Logged out successfully. Token has been invalidated.' 
+      });
+    } catch (blacklistError) {
+      // If blacklist table doesn't exist yet, still allow logout (client-side only)
+      console.warn('Token blacklisting failed (table may not exist yet):', blacklistError.message);
+      res.json({ 
+        message: 'Logged out successfully. Please remove the token from client storage.' 
+      });
+    }
   } catch (error) {
     console.error('Logout error:', error);
     res.status(500).json({ 
@@ -196,12 +203,17 @@ const authenticateToken = async (req, res, next) => {
   }
   
   try {
-    // Check if token is blacklisted first
-    const isBlacklisted = await users.isTokenBlacklisted(token);
-    if (isBlacklisted) {
-      return res.status(401).json({ 
-        error: 'Token has been invalidated. Please log in again.' 
-      });
+    // Check if token is blacklisted first (gracefully handle if table doesn't exist)
+    try {
+      const isBlacklisted = await users.isTokenBlacklisted(token);
+      if (isBlacklisted) {
+        return res.status(401).json({ 
+          error: 'Token has been invalidated. Please log in again.' 
+        });
+      }
+    } catch (blacklistError) {
+      // If blacklist table doesn't exist yet, just continue with normal JWT verification
+      console.warn('Blacklist check failed (table may not exist yet):', blacklistError.message);
     }
     
     // Verify JWT token
