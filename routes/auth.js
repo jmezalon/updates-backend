@@ -158,31 +158,6 @@ router.post('/verify-token', async (req, res, next) => {
   }
 });
 
-// POST /auth/logout
-router.post('/logout', authenticateToken, async (req, res) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-    
-    if (!token) {
-      return res.status(400).json({ 
-        error: 'No token provided' 
-      });
-    }
-    
-    // TODO: Re-enable token blacklisting after deploying users model changes
-    // Currently using client-side logout only to prevent crashes
-    res.json({ 
-      message: 'Logged out successfully. Please remove the token from client storage.' 
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ 
-      error: 'Failed to logout properly' 
-    });
-  }
-});
-
 // Middleware to authenticate requests
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -214,6 +189,31 @@ const authenticateToken = async (req, res, next) => {
     });
   }
 };
+
+// POST /auth/logout
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    
+    if (!token) {
+      return res.status(400).json({ 
+        error: 'No token provided' 
+      });
+    }
+    
+    // TODO: Re-enable token blacklisting after deploying users model changes
+    // Currently using client-side logout only to prevent crashes
+    res.json({ 
+      message: 'Logged out successfully. Please remove the token from client storage.' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      error: 'Failed to logout properly' 
+    });
+  }
+});
 
 // GET /auth/profile (protected route example)
 router.get('/profile', authenticateToken, async (req, res, next) => {
