@@ -29,15 +29,15 @@ router.post('/login', async (req, res, next) => {
       });
     }
     
-    // Generate JWT token
+    // Generate JWT token (no expiration - persistent until logout)
     const token = jwt.sign(
       { 
         userId: user.id, 
         email: user.email, 
         role: user.role 
       },
-      JWT_SECRET,
-      { expiresIn: '24h' }
+      JWT_SECRET
+      // No expiration - token persists until user logs out
     );
     
     // Get user's church assignments
@@ -92,15 +92,15 @@ router.post('/register', async (req, res, next) => {
       role
     });
     
-    // Generate JWT token
+    // Generate JWT token (no expiration - persistent until logout)
     const token = jwt.sign(
       { 
         userId: newUser.id, 
         email: newUser.email, 
         role: newUser.role 
       },
-      JWT_SECRET,
-      { expiresIn: '24h' }
+      JWT_SECRET
+      // No expiration - token persists until user logs out
     );
     
     res.status(201).json({
@@ -158,8 +158,34 @@ router.post('/verify-token', async (req, res, next) => {
   }
 });
 
+// POST /auth/logout
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    
+    if (!token) {
+      return res.status(400).json({ 
+        error: 'No token provided' 
+      });
+    }
+    
+    // Blacklist the token so it can't be used again
+    await users.blacklistToken(token, req.user.userId);
+    
+    res.json({ 
+      message: 'Logged out successfully. Token has been invalidated.' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      error: 'Failed to logout properly' 
+    });
+  }
+});
+
 // Middleware to authenticate requests
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
   
@@ -169,16 +195,30 @@ const authenticateToken = (req, res, next) => {
     });
   }
   
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ 
-        error: 'Invalid or expired token' 
+  try {
+    // Check if token is blacklisted first
+    const isBlacklisted = await users.isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      return res.status(401).json({ 
+        error: 'Token has been invalidated. Please log in again.' 
       });
     }
     
+    // Verify JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  });
+  } catch (err) {
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: 'Invalid or expired token' 
+      });
+    }
+    console.error('Authentication error:', err);
+    return res.status(500).json({ 
+      error: 'Authentication failed' 
+    });
+  }
 };
 
 // GET /auth/profile (protected route example)

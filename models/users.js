@@ -320,5 +320,35 @@ module.exports = {
       [userId, eventId]
     );
     return !!like;
+  },
+
+  // Token Blacklisting Methods for Secure Logout
+  async blacklistToken(token, userId, expiresAt = null) {
+    await dbWrapper.initialize();
+    // Store blacklisted tokens with optional expiration
+    const result = await dbWrapper.run(
+      'INSERT INTO blacklisted_tokens (token_hash, user_id, blacklisted_at, expires_at) VALUES (?, ?, ?, ?)',
+      [token, userId, Date.now(), expiresAt]
+    );
+    return result.lastID;
+  },
+
+  async isTokenBlacklisted(token) {
+    await dbWrapper.initialize();
+    const blacklisted = await dbWrapper.get(
+      'SELECT id FROM blacklisted_tokens WHERE token_hash = ? AND (expires_at IS NULL OR expires_at > ?)',
+      [token, Date.now()]
+    );
+    return !!blacklisted;
+  },
+
+  async cleanupExpiredBlacklistedTokens() {
+    await dbWrapper.initialize();
+    // Clean up expired blacklisted tokens to prevent table bloat
+    const result = await dbWrapper.run(
+      'DELETE FROM blacklisted_tokens WHERE expires_at IS NOT NULL AND expires_at <= ?',
+      [Date.now()]
+    );
+    return result.changes;
   }
 };

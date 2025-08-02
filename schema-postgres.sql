@@ -47,6 +47,20 @@ CREATE TABLE IF NOT EXISTS church_admin_assignments (
     FOREIGN KEY (church_id) REFERENCES churches(id) ON DELETE CASCADE
 );
 
+-- Token blacklisting table for secure logout
+CREATE TABLE IF NOT EXISTS blacklisted_tokens (
+    id SERIAL PRIMARY KEY,
+    token_hash TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    blacklisted_at BIGINT NOT NULL,
+    expires_at BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_blacklisted_tokens_hash ON blacklisted_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_blacklisted_tokens_expires ON blacklisted_tokens(expires_at);
+
 CREATE TABLE IF NOT EXISTS events (
     id SERIAL PRIMARY KEY,
     church_id INTEGER NOT NULL,
