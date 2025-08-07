@@ -11,9 +11,23 @@ const initializeDatabase = async () => {
   if (process.env.DATABASE_URL) {
     // Use PostgreSQL for production (Heroku)
     if (!pool) {
+      // Parse the connection string to override SSL settings
+      const connectionString = process.env.DATABASE_URL;
+      
+      // Remove SSL parameters from connection string if they exist
+      const cleanConnectionString = connectionString
+        .replace(/[?&]sslmode=[^&]*/g, '')
+        .replace(/[?&]ssl=true[&]?/g, '')
+        .replace(/[?&]sslcert=[^&]*/g, '')
+        .replace(/[?&]sslkey=[^&]*/g, '')
+        .replace(/[?&]sslrootcert=[^&]*/g, '');
+      
       pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        connectionString: cleanConnectionString,
+        ssl: {
+          rejectUnauthorized: false,
+          checkServerIdentity: () => undefined
+        }
       });
       console.log('Connected to PostgreSQL database');
     }

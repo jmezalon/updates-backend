@@ -31,7 +31,11 @@ const corsOptions = {
       : [
           "http://localhost:5173",
           "http://localhost:3000",
+          "http://localhost:8081", // React Native development server
+          "http://localhost:19006", // Expo development server
           "http://127.0.0.1:5173",
+          "http://127.0.0.1:8081",
+          "http://127.0.0.1:19006",
         ],
   credentials: true,
 };
