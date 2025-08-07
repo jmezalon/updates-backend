@@ -40,6 +40,38 @@ module.exports = {
     );
     return rows.map(serializeDatetimes);
   },
+
+  async getAllPaginated(limit = 20, offset = 0, churchId = null) {
+    await dbWrapper.initialize();
+    
+    let query = `
+      SELECT e.*, c.name as church_name, c.logo_url as church_logo,
+             COUNT(uel.id) as like_count
+       FROM events e 
+       JOIN churches c ON e.church_id = c.id 
+       LEFT JOIN user_event_likes uel ON e.id = uel.event_id
+    `;
+    
+    const params = [];
+    
+    // Add church filter if provided
+    if (churchId) {
+      query += ` WHERE e.church_id = ?`;
+      params.push(churchId);
+    }
+    
+    query += `
+       GROUP BY e.id, c.id
+       ORDER BY e.start_datetime ASC
+       LIMIT ? OFFSET ?
+    `;
+    
+    params.push(limit, offset);
+    
+    const rows = await dbWrapper.all(query, params);
+    return rows.map(serializeDatetimes);
+  },
+
   async getAllByChurch(churchId) {
     await dbWrapper.initialize();
     const rows = await dbWrapper.all(
