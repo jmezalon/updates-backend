@@ -109,7 +109,7 @@ router.post('/register', async (req, res, next) => {
         const emailResult = await sendAdminAccountCreationNotification(
           newUser.email,
           newUser.name,
-          newUser.password
+          password
         );
         
         if (emailResult.success) {
