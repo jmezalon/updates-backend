@@ -245,7 +245,7 @@ const sendChurchAssignmentNotification = async (userEmail, userName, churchName)
 };
 
 // Send admin account creation notification email to new admin
-const sendAdminAccountCreationNotification = async (adminEmail, adminName) => {
+const sendAdminAccountCreationNotification = async (adminEmail, adminName, password) => {
   // Check if we should use mock email service for testing
   const useMockEmail = process.env.USE_MOCK_EMAIL === 'true';
   
@@ -279,7 +279,7 @@ const sendAdminAccountCreationNotification = async (adminEmail, adminName) => {
           
           <p>For your first login, please use the following temporary credentials:</p>
           <p><strong>Username:</strong> ${adminEmail}</p>
-          <p><strong>Password:</strong> admin123</p>
+          <p><strong>Password:</strong> ${password}</p>
 
           <p>After logging in, you are highly encouraged to change your password to something more secure.</p>
           
