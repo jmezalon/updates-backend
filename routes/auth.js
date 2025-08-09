@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const users = require('../models/users');
-const { sendPasswordResetEmail } = require('../services/emailService');
+const { sendPasswordResetEmail, sendAdminAccountCreationNotification, sendAccountDeletionNotification, sendPasswordChangeNotification } = require('../services/emailService');
 
 // JWT secret - in production, this should be in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -102,6 +102,25 @@ router.post('/register', async (req, res, next) => {
       JWT_SECRET
       // No expiration - token persists until user logs out
     );
+    
+    // Send welcome email notification to new admin
+    if (role === 'church_admin') {
+      try {
+        const emailResult = await sendAdminAccountCreationNotification(
+          newUser.email,
+          newUser.name
+        );
+        
+        if (emailResult.success) {
+          console.log('✅ Admin account creation notification email sent successfully to:', newUser.email);
+        } else {
+          console.error('❌ Failed to send admin account creation notification email:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending admin account creation notification email:', emailError);
+        // Don't fail the registration if email fails - just log the error
+      }
+    }
     
     res.status(201).json({
       message: 'User created successfully',
@@ -296,6 +315,22 @@ router.post('/change-password', authenticateToken, async (req, res, next) => {
     // Update password in database
     await users.updatePassword(userId, newPasswordHash);
     
+    // Send password change confirmation email
+    try {
+      const emailResult = await sendPasswordChangeNotification(
+        user.email,
+        user.name
+      );
+      
+      if (emailResult.success) {
+        console.log('✅ Password change notification email sent successfully to:', user.email);
+      } else {
+        console.error('❌ Failed to send password change notification email:', emailResult.error);
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending password change notification email:', emailError);
+      // Don't fail the password change if email fails - just log the error
+    }
     
     res.json({ message: 'Password changed successfully' });
     
@@ -496,8 +531,34 @@ router.delete('/account', authenticateToken, async (req, res, next) => {
   try {
     const userId = req.user.userId;
     
+    // Get user information before deletion for email notification
+    const userToDelete = await users.getById(userId);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ 
+        error: 'User not found' 
+      });
+    }
+    
     // Delete user account
     await users.remove(userId);
+    
+    // Send account deletion notification email
+    try {
+      const emailResult = await sendAccountDeletionNotification(
+        userToDelete.email,
+        userToDelete.name
+      );
+      
+      if (emailResult.success) {
+        console.log('✅ Account deletion notification email sent successfully to:', userToDelete.email);
+      } else {
+        console.error('❌ Failed to send account deletion notification email:', emailResult.error);
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending account deletion notification email:', emailError);
+      // Don't fail the deletion if email fails - account is already deleted
+    }
     
     res.json({ message: 'Account deleted successfully' });
     

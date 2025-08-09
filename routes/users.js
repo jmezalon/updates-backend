@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const users = require('../models/users');
 const { authenticateToken } = require('./auth');
+const { sendChurchAssignmentNotification, sendAccountDeletionNotification } = require('../services/emailService');
 
 // GET /users (protected - superuser only)
 router.get('/', authenticateToken, async (req, res, next) => {
@@ -99,7 +100,35 @@ router.delete('/:id', authenticateToken, async (req, res, next) => {
       });
     }
     
+    // Get user information before deletion for email notification
+    const userToDelete = await users.getById(req.params.id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ 
+        error: 'User not found' 
+      });
+    }
+    
+    // Delete the user account
     await users.remove(req.params.id);
+    
+    // Send account deletion notification email
+    try {
+      const emailResult = await sendAccountDeletionNotification(
+        userToDelete.email,
+        userToDelete.name
+      );
+      
+      if (emailResult.success) {
+        console.log('✅ Account deletion notification email sent successfully to:', userToDelete.email);
+      } else {
+        console.error('❌ Failed to send account deletion notification email:', emailResult.error);
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending account deletion notification email:', emailError);
+      // Don't fail the deletion if email fails - account is already deleted
+    }
+    
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -124,6 +153,32 @@ router.post('/:id/assign-church', authenticateToken, async (req, res, next) => {
     }
     
     const assignmentId = await users.assignToChurch(req.params.id, churchId);
+    
+    // Get user and church information for email notification
+    try {
+      const user = await users.getById(req.params.id);
+      const churches = require('../models/churches');
+      const church = await churches.getById(churchId);
+      
+      if (user && church) {
+        // Send email notification to the user
+        const emailResult = await sendChurchAssignmentNotification(
+          user.email,
+          user.name,
+          church.name
+        );
+        
+        if (emailResult.success) {
+          console.log('✅ Church assignment notification email sent successfully to:', user.email);
+        } else {
+          console.error('❌ Failed to send church assignment notification email:', emailResult.error);
+        }
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending church assignment notification email:', emailError);
+      // Don't fail the assignment if email fails - just log the error
+    }
+    
     res.status(201).json({ 
       message: 'User assigned to church successfully',
       assignmentId 

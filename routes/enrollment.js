@@ -3,6 +3,7 @@ const router = express.Router();
 const churches = require('../models/churches');
 const users = require('../models/users');
 const { authenticateToken } = require('./auth');
+const { sendChurchEnrollmentNotification } = require('../services/emailService');
 
 // POST /enrollment/submit-church (protected - church_admin only)
 router.post('/submit-church', authenticateToken, async (req, res, next) => {
@@ -54,14 +55,30 @@ router.post('/submit-church', authenticateToken, async (req, res, next) => {
     // Update user enrollment status to 'pending'
     await users.updateEnrollmentStatus(req.user.userId, 'pending');
 
-    // In a real application, this would send an email notification to superuser
+    // Send email notification to admin
     console.log(`🏛️ New church enrollment submitted:`, {
       churchId,
       churchName,
       userId: req.user.userId,
       userEmail: req.user.email,
-      userName: req.user.name
     });
+
+    // Send email notification to admin
+    try {
+      const emailResult = await sendChurchEnrollmentNotification(
+        req.user.email,
+        churchName
+      );
+      
+      if (emailResult.success) {
+        console.log('✅ Church enrollment notification email sent successfully');
+      } else {
+        console.error('❌ Failed to send church enrollment notification email:', emailResult.error);
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending church enrollment notification email:', emailError);
+      // Don't fail the enrollment if email fails - just log the error
+    }
 
     res.status(201).json({ 
       message: 'Church enrollment submitted successfully',

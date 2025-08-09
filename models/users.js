@@ -127,10 +127,10 @@ module.exports = {
       [userId, churchId]
     );
     
-    // Update user enrollment status to 'completed'
+    // Update user enrollment status to 'assigned'
     await dbWrapper.run(
       'UPDATE users SET enrollment_status = ? WHERE id = ?',
-      ['completed', userId]
+      ['assigned', userId]
     );
     
     return result.lastID;
