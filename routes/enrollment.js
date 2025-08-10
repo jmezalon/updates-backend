@@ -61,12 +61,14 @@ router.post('/submit-church', authenticateToken, async (req, res, next) => {
       churchName,
       userId: req.user.userId,
       userEmail: req.user.email,
+      userName: req.user.name,
     });
 
     // Send email notification to admin
     try {
       const emailResult = await sendChurchEnrollmentNotification(
         req.user.email,
+        req.user.name,
         churchName
       );
       

@@ -103,7 +103,7 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
 };
 
 // Send church enrollment notification email to admin
-const sendChurchEnrollmentNotification = async (userEmail, churchName) => {
+const sendChurchEnrollmentNotification = async (userEmail, name, churchName) => {
   // Check if we should use mock email service for testing
   const useMockEmail = process.env.USE_MOCK_EMAIL === 'true';
   
@@ -135,19 +135,27 @@ const sendChurchEnrollmentNotification = async (userEmail, churchName) => {
       subject: 'New Church Enrollment Submission',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h4 style="color: #333; text-align: center;">${userEmail} has submitted her church enrollment</h4>
+          <h4 style="color: #333; text-align: center;">Church enrollment submitted by ${name}</h4>
           
           <p>A new church enrollment has been submitted through the Updates Admin Portal.</p>
           
           <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h3 style="color: #333; margin-top: 0;">Enrollment Details:</h3>
-            <p><strong>User Email:</strong> ${userEmail}</p>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${userEmail}</p>
             <p><strong>Church Name:</strong> ${churchName}</p>
           </div>
           
           <p style="color: #666; font-size: 14px;">
             Please review this enrollment submission and take appropriate action in the admin portal.
           </p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://churchupdates.netlify.app/login" 
+               style="background-color: rgba(255, 184, 0, 1); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+              Access Admin Portal
+            </a>
+          </div>
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           

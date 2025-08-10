@@ -34,6 +34,7 @@ router.post('/login', async (req, res, next) => {
       { 
         userId: user.id, 
         email: user.email, 
+        name: user.name,
         role: user.role 
       },
       JWT_SECRET
@@ -97,6 +98,7 @@ router.post('/register', async (req, res, next) => {
       { 
         userId: newUser.id, 
         email: newUser.email, 
+        name: newUser.name,
         role: newUser.role 
       },
       JWT_SECRET
