@@ -154,11 +154,9 @@ router.get('/:id', async (req, res, next) => {
             color: white;
           }
           
-          .android-coming-soon {
-            color: white;
-            font-size: 0.9rem;
-            opacity: 0.9;
-            font-style: italic;
+          .android-button {
+            background: white;
+            color: #e74c3c;
           }
           
           .footer-buttons {
@@ -296,9 +294,11 @@ router.get('/:id', async (req, res, next) => {
             <div class="app-banner-text">📱 Get the full Updates experience!</div>
             <div class="download-buttons">
               <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
-                 Download for iOS
+                🍎 Download for iOS
               </a>
-              <div class="android-coming-soon">🤖 Android app coming soon!</div>
+              <a href="https://play.google.com/store/apps/details?id=com.mezalonmax.updates&pcampaignid=web_share" target="_blank" class="download-button android-button">
+                🤖 Download for Android
+              </a>
             </div>
           </div>
           
@@ -363,18 +363,20 @@ router.get('/:id', async (req, res, next) => {
           <div class="footer">
             <div class="footer-title">Want to discover more events?</div>
             <div class="footer-text">
-              Download our iOS app or visit our web app to explore events from churches in your area, 
+              Download our mobile app or visit our web app to explore events from churches in your area, 
               save favorites, and never miss what's happening in your community.
             </div>
             <div class="footer-buttons">
               <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
-                 Download for iOS
+                🍎 Download for iOS
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.mezalonmax.updates&pcampaignid=web_share" target="_blank" class="download-button android-button">
+                🤖 Download for Android
               </a>
               <a href="https://mychurchupdates.netlify.app" target="_blank" class="download-button web-button">
                 🌐 Visit Web App
               </a>
             </div>
-            <div class="android-message">🤖 Android app coming soon!</div>
           </div>
         </div>
         
