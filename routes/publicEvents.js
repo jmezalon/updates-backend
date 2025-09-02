@@ -35,7 +35,25 @@ router.get('/:id', async (req, res, next) => {
     };
 
     const formatTime = (dateString) => {
+      // Parse the datetime string and treat it as the intended local time
+      // regardless of server timezone
       const date = new Date(dateString);
+      
+      // Extract hours and minutes directly to avoid timezone conversion issues
+      const timeString = dateString.match(/(\d{1,2}):(\d{2})/);
+      if (timeString) {
+        const hours = parseInt(timeString[1]);
+        const minutes = parseInt(timeString[2]);
+        
+        // Format manually to preserve the original time
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        const displayMinutes = minutes.toString().padStart(2, '0');
+        
+        return `${displayHours}:${displayMinutes} ${period}`;
+      }
+      
+      // Fallback to original method if regex doesn't match
       return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
