@@ -35,15 +35,16 @@ router.get('/:id', async (req, res, next) => {
     };
 
     const formatTime = (dateString) => {
-      // Parse the datetime string and treat it as the intended local time
-      // regardless of server timezone
-      const date = new Date(dateString);
+      // Parse the datetime string as if it's in the local timezone
+      // This prevents UTC conversion issues
+      const date = new Date(dateString + (dateString.includes('T') ? '' : 'T00:00:00'));
       
-      // Extract hours and minutes directly to avoid timezone conversion issues
-      const timeString = dateString.match(/(\d{1,2}):(\d{2})/);
-      if (timeString) {
-        const hours = parseInt(timeString[1]);
-        const minutes = parseInt(timeString[2]);
+      // Get the time components directly from the date object
+      // but treat the input as local time to avoid timezone shifts
+      const timeMatch = dateString.match(/T?(\d{1,2}):(\d{2})/);
+      if (timeMatch) {
+        const hours = parseInt(timeMatch[1]);
+        const minutes = parseInt(timeMatch[2]);
         
         // Format manually to preserve the original time
         const period = hours >= 12 ? 'PM' : 'AM';
@@ -53,11 +54,21 @@ router.get('/:id', async (req, res, next) => {
         return `${displayHours}:${displayMinutes} ${period}`;
       }
       
-      // Fallback to original method if regex doesn't match
-      return date.toLocaleTimeString('en-US', {
+      // If no time pattern found, extract from date parts to avoid timezone conversion
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const day = date.getDate();
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      
+      // Create a new date in local timezone to avoid UTC conversion
+      const localDate = new Date(year, month, day, hours, minutes);
+      
+      return localDate.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
+        timeZone: 'America/New_York' // Assuming Eastern timezone, adjust as needed
       });
     };
 
