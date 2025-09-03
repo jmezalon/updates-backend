@@ -34,42 +34,20 @@ router.get('/:id', async (req, res, next) => {
       });
     };
 
+    // Render time as stored in DB, no timezone/local conversion, just AM/PM formatting
     const formatTime = (dateString) => {
-      // Parse the datetime string as if it's in the local timezone
-      // This prevents UTC conversion issues
-      const date = new Date(dateString + (dateString.includes('T') ? '' : 'T00:00:00'));
-      
-      // Get the time components directly from the date object
-      // but treat the input as local time to avoid timezone shifts
-      const timeMatch = dateString.match(/T?(\d{1,2}):(\d{2})/);
-      if (timeMatch) {
-        const hours = parseInt(timeMatch[1]);
-        const minutes = parseInt(timeMatch[2]);
-        
-        // Format manually to preserve the original time
+      // Supports formats like "2025-09-02T18:00" or "2025-09-02 18:00"
+      const match = dateString.match(/T?(\d{1,2}):(\d{2})/);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = match[2];
         const period = hours >= 12 ? 'PM' : 'AM';
-        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-        const displayMinutes = minutes.toString().padStart(2, '0');
-        
-        return `${displayHours}:${displayMinutes} ${period}`;
+        if (hours === 0) hours = 12;
+        else if (hours > 12) hours -= 12;
+        return `${hours}:${minutes} ${period}`;
       }
-      
-      // If no time pattern found, extract from date parts to avoid timezone conversion
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const day = date.getDate();
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      
-      // Create a new date in local timezone to avoid UTC conversion
-      const localDate = new Date(year, month, day, hours, minutes);
-      
-      return localDate.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'America/New_York' // Assuming Eastern timezone, adjust as needed
-      });
+      // If no time part found, return empty or a placeholder
+      return '';
     };
 
     // Fix image URL if it contains localhost
@@ -352,7 +330,7 @@ router.get('/:id', async (req, res, next) => {
             <div class="download-buttons">
               <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
                 <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 [...] 
                 </svg>
                 <div class="button-text">
                   <div class="button-subtitle">Download on the</div>
@@ -459,7 +437,7 @@ router.get('/:id', async (req, res, next) => {
             <div class="footer-buttons">
               <a href="https://apps.apple.com/us/app/churchupdates/id6749280219" target="_blank" class="download-button ios-button">
                 <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 [...] 
                 </svg>
                 <div class="button-text">
                   <div class="button-subtitle">Download on the</div>
