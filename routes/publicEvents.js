@@ -391,7 +391,7 @@ router.get('/:id', async (req, res, next) => {
             <div class="section">
               <div class="section-title">📅 When?</div>
               <div class="datetime">
-                ${formatDate(event.start_datetime)} at ${formatTime(event.start_datetime)}
+                ${formatDate(event.start_datetime)} at ${formatTime(event.start_datetime.toLocaleDateString())}
               </div>
               ${event.price !== undefined ? `
                 <div class="price">
