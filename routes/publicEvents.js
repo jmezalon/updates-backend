@@ -38,7 +38,7 @@ router.get('/:id', async (req, res, next) => {
       // Supports formats like "2025-09-02T18:00" or "2025-09-02 18:00"
       const match = dateString.match(/T?(\d{1,2}):(\d{2})/);
       if (match) {
-        let hours = parseInt(match[1], 10);
+        let hours = parseInt(match[1], 10) - 4; // Brute force fix for timezone
         const minutes = match[2];
         const period = hours >= 12 ? 'PM' : 'AM';
         if (hours === 0) hours = 12;
@@ -391,7 +391,7 @@ router.get('/:id', async (req, res, next) => {
             <div class="section">
               <div class="section-title">📅 When?</div>
               <div class="datetime">
-                ${formatDate(event.start_datetime)} at ${formatTime(event.start_datetime.toLocaleDateString())}
+                ${formatDate(event.start_datetime)} at ${formatTime(event.start_datetime)}
               </div>
               ${event.price !== undefined ? `
                 <div class="price">
